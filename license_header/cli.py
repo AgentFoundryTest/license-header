@@ -97,7 +97,7 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
         # Display summary
         click.echo(f"Summary:")
         click.echo(f"  Scanned: {result.total_processed()}")
-        click.echo(f"  Eligible: {len(result.modified_files) + len(result.already_compliant)}")
+        click.echo(f"  Eligible: {len(result.modified_files) + len(result.already_compliant) + len(result.failed_files)}")
         click.echo(f"  Added: {len(result.modified_files)}")
         click.echo(f"  Compliant: {len(result.already_compliant)}")
         click.echo(f"  Skipped: {len(result.skipped_files)}")

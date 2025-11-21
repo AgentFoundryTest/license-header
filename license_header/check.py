@@ -28,7 +28,7 @@ class CheckResult:
     
     def total_eligible(self) -> int:
         """Return total number of eligible files checked."""
-        return len(self.compliant_files) + len(self.non_compliant_files)
+        return len(self.compliant_files) + len(self.non_compliant_files) + len(self.failed_files)
     
     def total_scanned(self) -> int:
         """Return total number of files scanned."""
