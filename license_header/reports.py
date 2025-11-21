@@ -72,7 +72,7 @@ def generate_json_report(
             'mode': 'apply',
             'summary': {
                 'scanned': result.total_processed(),
-                'eligible': len(result.modified_files) + len(result.already_compliant),
+                'eligible': len(result.modified_files) + len(result.already_compliant) + len(result.failed_files),
                 'modified': len(result.modified_files),
                 'compliant': len(result.already_compliant),
                 'skipped': len(result.skipped_files),
@@ -150,7 +150,7 @@ def generate_markdown_report(
         lines.append("## Summary")
         lines.append("")
         lines.append(f"- **Scanned:** {result.total_processed()}")
-        lines.append(f"- **Eligible:** {len(result.modified_files) + len(result.already_compliant)}")
+        lines.append(f"- **Eligible:** {len(result.modified_files) + len(result.already_compliant) + len(result.failed_files)}")
         lines.append(f"- **Modified:** {len(result.modified_files)}")
         lines.append(f"- **Already Compliant:** {len(result.already_compliant)}")
         lines.append(f"- **Skipped:** {len(result.skipped_files)}")
