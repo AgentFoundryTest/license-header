@@ -19,13 +19,11 @@ logger = logging.getLogger(__name__)
 def check_python_version():
     """Check if Python version meets minimum requirement."""
     if sys.version_info < (3, 11):
-        logger.error(
-            f"Python 3.11 or higher is required. "
-            f"Current version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        )
+        current_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        logger.error(f"Python 3.11 or higher is required. Current version: {current_version}")
         click.echo(
             f"Error: Python 3.11 or higher is required.\n"
-            f"Current version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}\n"
+            f"Current version: {current_version}\n"
             f"Please upgrade your Python installation.",
             err=True
         )
@@ -57,7 +55,6 @@ def apply(path, dry_run):
     
     click.echo("Note: Header application logic not yet implemented.")
     logger.info("Apply command completed successfully")
-    sys.exit(0)
 
 
 @main.command()
@@ -73,7 +70,6 @@ def check(path, strict):
     
     click.echo("Note: Header checking logic not yet implemented.")
     logger.info("Check command completed successfully")
-    sys.exit(0)
 
 
 if __name__ == '__main__':
