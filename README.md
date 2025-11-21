@@ -37,6 +37,38 @@ pip install -e ".[dev]"
 
 The CLI provides two main commands: `apply` and `check`.
 
+### Quick Start
+
+1. Create a `LICENSE_HEADER` file in your repository root with your header content:
+
+```
+# Copyright (c) 2025 Your Organization
+# Licensed under the MIT License
+```
+
+2. Optionally, create a `license-header.config.json` configuration file:
+
+```json
+{
+  "header_file": "LICENSE_HEADER",
+  "include_extensions": [".py", ".js", ".ts"],
+  "exclude_paths": ["node_modules", ".git", "venv"]
+}
+```
+
+3. Run the tool:
+
+```bash
+# Check headers (read-only)
+license-header check
+
+# Apply headers with preview
+license-header apply --dry-run
+
+# Apply headers
+license-header apply
+```
+
 ### Apply License Headers
 
 Apply license headers to source files in your project:
@@ -50,6 +82,18 @@ license-header apply --path /path/to/project
 
 # Preview changes without modifying files
 license-header apply --dry-run
+
+# Specify custom header file
+license-header apply --header path/to/header.txt
+
+# Include only specific file extensions
+license-header apply --include-extension .py --include-extension .js
+
+# Exclude specific paths
+license-header apply --exclude-path dist --exclude-path build
+
+# Save modified files to output directory
+license-header apply --output ./output
 ```
 
 ### Check License Headers
@@ -65,9 +109,94 @@ license-header check --path /path/to/project
 
 # Fail on any missing or incorrect headers
 license-header check --strict
+
+# Use custom configuration
+license-header check --config my-config.json
 ```
 
-### Getting Help
+## Configuration
+
+The tool supports configuration through both CLI options and a JSON configuration file. CLI options always take precedence over configuration file settings.
+
+### Configuration File
+
+Create a `license-header.config.json` file in your repository root:
+
+```json
+{
+  "header_file": "LICENSE_HEADER",
+  "include_extensions": [".py", ".js", ".ts", ".java", ".cpp", ".c", ".h"],
+  "exclude_paths": ["node_modules", ".git", "__pycache__", "venv", "env", ".venv", "dist", "build"],
+  "output_dir": null
+}
+```
+
+### Configuration Options
+
+| Option | CLI Flag | Config File Key | Default | Description |
+|--------|----------|----------------|---------|-------------|
+| **Header File** | `--header` | `header_file` | None (required) | Path to the license header file (relative to repo root or absolute) |
+| **Include Extensions** | `--include-extension` | `include_extensions` | `[".py", ".js", ".ts", ".java", ".cpp", ".c", ".h"]` | File extensions to process. CLI flag can be specified multiple times. |
+| **Exclude Paths** | `--exclude-path` | `exclude_paths` | `["node_modules", ".git", "__pycache__", "venv", "env", ".venv"]` | Paths/patterns to exclude from processing. CLI flag can be specified multiple times. |
+| **Output Directory** | `--output` | `output_dir` | None (modify in-place) | Directory to save modified files (apply mode) or reports (check mode) |
+| **Target Path** | `--path` | N/A | `.` (current directory) | Path to scan for source files |
+| **Dry Run** | `--dry-run` | N/A | `false` | Preview changes without modifying files (apply mode only) |
+| **Strict Mode** | `--strict` | N/A | `false` | Fail with non-zero exit code on any issues (check mode only) |
+| **Config File** | `--config` | N/A | `license-header.config.json` if present | Path to custom configuration file |
+
+### Configuration Precedence
+
+Configuration is loaded and merged in the following order (later sources override earlier ones):
+
+1. **Default values** - Built-in defaults for extensions and exclude paths
+2. **Configuration file** - Settings from `license-header.config.json` (or custom config file)
+3. **CLI arguments** - Command-line flags (highest precedence)
+
+### Examples
+
+#### Using only CLI flags
+
+```bash
+license-header apply \
+  --header LICENSE_HEADER \
+  --include-extension .py \
+  --include-extension .js \
+  --exclude-path node_modules \
+  --exclude-path dist \
+  --dry-run
+```
+
+#### Using configuration file with CLI overrides
+
+```bash
+# Config file provides defaults, CLI overrides specific options
+license-header apply --include-extension .py --dry-run
+```
+
+#### Using custom configuration file
+
+```bash
+license-header check --config configs/strict-config.json --strict
+```
+
+### Path Validation
+
+The tool enforces security restrictions on file paths:
+
+- **Header file paths** must be within the repository root or absolute paths that don't traverse above the repo
+- **Output directory paths** must be within the repository root
+- Relative paths are resolved relative to the repository root (detected by finding `.git` directory)
+- Paths that attempt to traverse above the repository root (e.g., `../../etc/passwd`) are rejected with an error
+
+### Edge Cases
+
+- **Missing header file**: Tool exits with descriptive error message and non-zero exit code
+- **Header without trailing newline**: File content is read exactly as-is without modification
+- **Invalid JSON config**: Tool exits with parse error details
+- **Unknown file extensions**: Logged as warnings but don't prevent execution
+- **Invalid exclude patterns**: Logged as warnings but don't prevent execution
+
+## Getting Help
 
 ```bash
 # Show version
@@ -112,7 +241,7 @@ jobs:
 
 ## Development Status
 
-This project is in early development. The CLI structure and commands are established, but header scanning and application logic is not yet implemented.
+This project is in early development. Configuration loading and CLI options are fully implemented.
 
 ### Current Status
 
@@ -120,7 +249,11 @@ This project is in early development. The CLI structure and commands are establi
 - ✅ Structured logging
 - ✅ Python version validation (3.11+)
 - ✅ Error handling for unknown commands
-- ⏳ Configuration file support (planned)
+- ✅ Configuration file support with JSON format
+- ✅ CLI options for all configuration parameters
+- ✅ Configuration merging with proper precedence
+- ✅ Path validation and security checks
+- ✅ Header file loading and validation
 - ⏳ Header scanning logic (planned)
 - ⏳ Header application logic (planned)
 - ⏳ File pattern matching (planned)

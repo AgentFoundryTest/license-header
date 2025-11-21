@@ -1,0 +1,23 @@
+{
+  "header_file": "LICENSE_HEADER",
+  "include_extensions": [
+    ".py",
+    ".js",
+    ".ts",
+    ".java",
+    ".cpp",
+    ".c",
+    ".h"
+  ],
+  "exclude_paths": [
+    "node_modules",
+    ".git",
+    "__pycache__",
+    "venv",
+    "env",
+    ".venv",
+    "dist",
+    "build"
+  ],
+  "output_dir": null
+}
