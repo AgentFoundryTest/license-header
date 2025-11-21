@@ -111,7 +111,8 @@ def read_file_with_encoding(file_path: Path) -> Tuple[str, Optional[bytes], str]
     bom, encoding = detect_bom(file_path)
     
     try:
-        with open(file_path, 'r', encoding=encoding) as f:
+        # Read with newline=None to get universal newlines but preserve original style
+        with open(file_path, 'r', encoding=encoding, newline='') as f:
             content = f.read()
         return content, bom, encoding
     except (OSError, IOError, UnicodeDecodeError) as e:
@@ -139,9 +140,12 @@ def write_file_with_encoding(
         if bom is not None:
             with open(file_path, 'wb') as f:
                 f.write(bom)
+                # Use newline='' mode encoding to preserve line endings
+                # Encode the content with the proper encoding, preserving CRLF/LF
                 f.write(content.encode(encoding.replace('-sig', '')))
         else:
-            with open(file_path, 'w', encoding=encoding) as f:
+            # Use newline='' to preserve original line endings in the content
+            with open(file_path, 'w', encoding=encoding, newline='') as f:
                 f.write(content)
     except (OSError, IOError) as e:
         logger.error(f"Error writing file {file_path}: {e}")

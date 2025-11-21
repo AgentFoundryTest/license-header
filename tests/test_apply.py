@@ -160,6 +160,62 @@ class TestUtilityFunctions:
         with open(new_path, 'rb') as f:
             data = f.read()
             assert data.startswith(b'\xef\xbb\xbf')
+    
+    def test_read_write_preserves_crlf_with_bom(self, tmp_path):
+        """Test that CRLF line endings are preserved when writing BOM files."""
+        import codecs
+        file_path = tmp_path / "test_crlf_bom.txt"
+        
+        # Write file with UTF-8 BOM and CRLF line endings
+        with open(file_path, 'wb') as f:
+            f.write(codecs.BOM_UTF8)
+            f.write(b'Line 1\r\nLine 2\r\nLine 3\r\n')
+        
+        # Read file
+        content, bom, encoding = read_file_with_encoding(file_path)
+        assert '\r\n' in content, "CRLF should be preserved when reading"
+        
+        # Modify content (simulate adding header)
+        new_content = "# Header\r\n" + content
+        
+        # Write back
+        write_file_with_encoding(file_path, new_content, bom, encoding)
+        
+        # Read raw bytes and verify CRLF is still there
+        with open(file_path, 'rb') as f:
+            raw_bytes = f.read()
+        
+        assert raw_bytes.startswith(codecs.BOM_UTF8), "BOM should be preserved"
+        assert b'\r\n' in raw_bytes, "CRLF line endings should be preserved"
+        assert raw_bytes.count(b'\r\n') == 4, "Should have 4 CRLF sequences"
+    
+    def test_read_write_preserves_lf_with_bom(self, tmp_path):
+        """Test that LF line endings are preserved when writing BOM files."""
+        import codecs
+        file_path = tmp_path / "test_lf_bom.txt"
+        
+        # Write file with UTF-8 BOM and LF line endings
+        with open(file_path, 'wb') as f:
+            f.write(codecs.BOM_UTF8)
+            f.write(b'Line 1\nLine 2\nLine 3\n')
+        
+        # Read file
+        content, bom, encoding = read_file_with_encoding(file_path)
+        assert '\n' in content and '\r' not in content, "Should have LF only"
+        
+        # Modify content (simulate adding header)
+        new_content = "# Header\n" + content
+        
+        # Write back
+        write_file_with_encoding(file_path, new_content, bom, encoding)
+        
+        # Read raw bytes and verify no CRLF introduced
+        with open(file_path, 'rb') as f:
+            raw_bytes = f.read()
+        
+        assert raw_bytes.startswith(codecs.BOM_UTF8), "BOM should be preserved"
+        assert b'\r\n' not in raw_bytes, "Should not have CRLF"
+        assert b'\n' in raw_bytes, "Should have LF"
 
 
 class TestNormalizeHeader:
