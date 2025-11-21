@@ -119,6 +119,74 @@ class TestMatchesExcludePattern:
         
         # Should be excluded
         assert matches_exclude_pattern(outside_path, tmp_path, [])
+    
+    def test_glob_pattern_wildcard(self, tmp_path):
+        """Test glob patterns with wildcards."""
+        # Pattern with single wildcard
+        pyc_path = tmp_path / "src" / "file.pyc"
+        py_path = tmp_path / "src" / "file.py"
+        
+        assert matches_exclude_pattern(pyc_path, tmp_path, ["*.pyc"])
+        assert not matches_exclude_pattern(py_path, tmp_path, ["*.pyc"])
+    
+    def test_glob_pattern_subdirectory(self, tmp_path):
+        """Test glob patterns matching subdirectories."""
+        # Pattern like 'generated/*.py'
+        generated_py = tmp_path / "generated" / "output.py"
+        generated_js = tmp_path / "generated" / "output.js"
+        src_py = tmp_path / "src" / "output.py"
+        
+        assert matches_exclude_pattern(generated_py, tmp_path, ["generated/*.py"])
+        assert not matches_exclude_pattern(generated_js, tmp_path, ["generated/*.py"])
+        assert not matches_exclude_pattern(src_py, tmp_path, ["generated/*.py"])
+    
+    def test_glob_pattern_recursive(self, tmp_path):
+        """Test glob patterns with recursive wildcards."""
+        # Pattern like '**/vendor'
+        vendor_1 = tmp_path / "vendor" / "lib.js"
+        vendor_2 = tmp_path / "src" / "vendor" / "lib.js"
+        vendor_3 = tmp_path / "deep" / "nested" / "vendor" / "lib.js"
+        non_vendor = tmp_path / "src" / "lib.js"
+        
+        patterns = ["**/vendor"]
+        assert matches_exclude_pattern(vendor_1, tmp_path, patterns)
+        assert matches_exclude_pattern(vendor_2, tmp_path, patterns)
+        assert matches_exclude_pattern(vendor_3, tmp_path, patterns)
+        assert not matches_exclude_pattern(non_vendor, tmp_path, patterns)
+    
+    def test_glob_pattern_complex(self, tmp_path):
+        """Test complex glob patterns."""
+        # Pattern like 'src/*/temp'
+        match_1 = tmp_path / "src" / "module1" / "temp" / "file.py"
+        match_2 = tmp_path / "src" / "module2" / "temp" / "file.py"
+        no_match_1 = tmp_path / "src" / "temp" / "file.py"  # Missing middle component
+        no_match_2 = tmp_path / "lib" / "module1" / "temp" / "file.py"  # Wrong base
+        
+        patterns = ["src/*/temp"]
+        assert matches_exclude_pattern(match_1, tmp_path, patterns)
+        assert matches_exclude_pattern(match_2, tmp_path, patterns)
+        assert not matches_exclude_pattern(no_match_1, tmp_path, patterns)
+        assert not matches_exclude_pattern(no_match_2, tmp_path, patterns)
+    
+    def test_glob_and_simple_patterns_mixed(self, tmp_path):
+        """Test mixing glob patterns with simple directory names."""
+        patterns = ["node_modules", "*.pyc", "generated/*.py"]
+        
+        # Simple directory match
+        node_file = tmp_path / "src" / "node_modules" / "package.json"
+        assert matches_exclude_pattern(node_file, tmp_path, patterns)
+        
+        # Glob wildcard match
+        pyc_file = tmp_path / "src" / "module.pyc"
+        assert matches_exclude_pattern(pyc_file, tmp_path, patterns)
+        
+        # Glob subdirectory match
+        generated_py = tmp_path / "generated" / "output.py"
+        assert matches_exclude_pattern(generated_py, tmp_path, patterns)
+        
+        # No match
+        normal_py = tmp_path / "src" / "main.py"
+        assert not matches_exclude_pattern(normal_py, tmp_path, patterns)
 
 
 
@@ -220,6 +288,63 @@ class TestScanRepository:
         
         assert len(result.eligible_files) == 1
         assert 'include/file.py' in str(result.eligible_files[0])
+    
+    def test_glob_patterns_in_scan(self, tmp_path):
+        """Test that glob patterns work in repository scanning."""
+        # Create directory structure
+        (tmp_path / "src").mkdir()
+        (tmp_path / "generated").mkdir()
+        (tmp_path / "vendor").mkdir()
+        
+        # Create files that should be excluded by glob patterns
+        (tmp_path / "generated" / "output.py").write_text("# generated\n")
+        (tmp_path / "generated" / "data.py").write_text("# generated\n")
+        (tmp_path / "file.pyc").write_text("compiled\n")
+        (tmp_path / "src" / "temp.pyc").write_text("compiled\n")
+        (tmp_path / "vendor" / "lib.py").write_text("# vendor\n")
+        
+        # Create files that should be included
+        (tmp_path / "src" / "main.py").write_text("# main\n")
+        (tmp_path / "src" / "utils.py").write_text("# utils\n")
+        
+        result = scan_repository(
+            root_path=tmp_path,
+            include_extensions=['.py', '.pyc'],
+            exclude_patterns=["generated/*.py", "*.pyc", "**/vendor"],
+            repo_root=tmp_path,
+        )
+        
+        # Should only find the files in src, not in generated or vendor, and not .pyc files
+        assert len(result.eligible_files) == 2
+        assert all('src/' in str(f) for f in result.eligible_files)
+        assert all('.py' in str(f) and '.pyc' not in str(f) for f in result.eligible_files)
+    
+    def test_complex_glob_patterns_in_scan(self, tmp_path):
+        """Test complex glob patterns in repository scanning."""
+        # Create directory structure
+        (tmp_path / "src" / "module1" / "temp").mkdir(parents=True)
+        (tmp_path / "src" / "module2" / "temp").mkdir(parents=True)
+        (tmp_path / "src" / "module1" / "code").mkdir(parents=True)
+        (tmp_path / "lib").mkdir()
+        
+        # Files that should be excluded by 'src/*/temp' pattern
+        (tmp_path / "src" / "module1" / "temp" / "cache.py").write_text("# temp\n")
+        (tmp_path / "src" / "module2" / "temp" / "cache.py").write_text("# temp\n")
+        
+        # Files that should be included
+        (tmp_path / "src" / "module1" / "code" / "main.py").write_text("# code\n")
+        (tmp_path / "lib" / "util.py").write_text("# lib\n")
+        
+        result = scan_repository(
+            root_path=tmp_path,
+            include_extensions=['.py'],
+            exclude_patterns=["src/*/temp"],
+            repo_root=tmp_path,
+        )
+        
+        # Should only find files not in temp directories
+        assert len(result.eligible_files) == 2
+        assert not any('temp' in str(f) for f in result.eligible_files)
     
     def test_binary_file_detection(self, tmp_path):
         """Test that binary files are detected and skipped."""

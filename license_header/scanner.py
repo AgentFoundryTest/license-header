@@ -76,6 +76,10 @@ def matches_exclude_pattern(path: Path, repo_root: Path, exclude_patterns: List[
     """
     Check if a path matches any exclude pattern.
     
+    Patterns can be:
+    - Simple directory names (e.g., 'node_modules') - matches if directory appears anywhere in path
+    - Glob patterns (e.g., '*.pyc', 'generated/*.py', '**/vendor') - uses glob semantics
+    
     Args:
         path: Path to check (absolute)
         repo_root: Repository root path
@@ -90,8 +94,33 @@ def matches_exclude_pattern(path: Path, repo_root: Path, exclude_patterns: List[
         
         # Check each pattern
         for pattern in exclude_patterns:
-            # Check if pattern matches any part of the path
-            # This allows patterns to match directory names anywhere in the path
+            # First, try glob matching using PurePath.match()
+            # This handles patterns like '*.pyc', 'generated/*.py', '**/vendor'
+            if rel_path.match(pattern):
+                return True
+            
+            # For patterns that don't end with wildcards, also try matching as directory patterns
+            # This allows patterns like 'vendor' or '**/vendor' to match 'vendor/file.js'
+            if not pattern.endswith('*'):
+                # Try pattern/** for recursive directory match
+                if rel_path.match(pattern + '/**'):
+                    return True
+                # Try pattern/* for single-level directory match
+                if rel_path.match(pattern + '/*'):
+                    return True
+                
+                # For patterns starting with **, also try without the ** prefix
+                # This handles cases like '**/vendor' matching 'vendor/file.js' at root
+                if pattern.startswith('**/'):
+                    stripped_pattern = pattern[3:]  # Remove '**/
+                    if rel_path.match(stripped_pattern + '/**'):
+                        return True
+                    if rel_path.match(stripped_pattern + '/*'):
+                        return True
+            
+            # Also check if pattern is a simple directory name that appears in the path
+            # This ensures backward compatibility with simple patterns like 'node_modules'
+            # which should match any occurrence of that directory in the path
             if pattern in rel_path.parts:
                 return True
                 

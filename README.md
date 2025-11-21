@@ -181,7 +181,37 @@ license-header apply --exclude-path vendor --exclude-path generated
 }
 ```
 
-Note: Custom exclude patterns are added to (not replacing) the default excludes. Patterns match directory and file names anywhere in the path.
+**Note:** Custom exclude patterns are added to (not replacing) the default excludes.
+
+#### Pattern Matching
+
+Exclude patterns support both simple directory names and glob patterns:
+
+**Simple directory names** (e.g., `node_modules`, `vendor`):
+- Match if the directory appears anywhere in the file path
+- Example: `vendor` matches `vendor/lib.py`, `src/vendor/pkg.js`, `deep/nested/vendor/file.c`
+
+**Glob patterns** support standard wildcards:
+- `*.pyc` - matches files with .pyc extension anywhere in the repository
+- `generated/*.py` - matches .py files directly inside `generated` directory
+- `**/vendor` - matches `vendor` directory at any level (including root)
+- `src/*/temp` - matches `temp` directories inside any subdirectory of `src`
+- `build/**/*.js` - matches all .js files anywhere under `build` directory
+
+**Examples:**
+```bash
+# Exclude all .pyc files
+license-header apply --exclude-path "*.pyc"
+
+# Exclude generated Python files
+license-header apply --exclude-path "generated/*.py"
+
+# Exclude all vendor directories at any level
+license-header apply --exclude-path "**/vendor"
+
+# Exclude temp directories in specific locations
+license-header apply --exclude-path "src/*/temp"
+```
 
 #### Edge Cases
 
