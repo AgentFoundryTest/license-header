@@ -111,7 +111,7 @@ class TestUtilityFunctions:
         
         bom, encoding = detect_bom(file_path)
         assert bom == codecs.BOM_UTF16_LE
-        assert encoding == 'utf-16-le'
+        assert encoding == 'utf-16'
     
     def test_detect_bom_utf32_le(self, tmp_path):
         """Test detecting UTF-32 LE BOM (should not be misdetected as UTF-16 LE)."""
@@ -123,7 +123,7 @@ class TestUtilityFunctions:
         
         bom, encoding = detect_bom(file_path)
         assert bom == codecs.BOM_UTF32_LE, f"Expected UTF-32 LE BOM, got {bom.hex() if bom else None}"
-        assert encoding == 'utf-32-le', f"Expected utf-32-le encoding, got {encoding}"
+        assert encoding == 'utf-32', f"Expected utf-32 encoding, got {encoding}"
     
     def test_detect_bom_utf32_be(self, tmp_path):
         """Test detecting UTF-32 BE BOM."""
@@ -135,7 +135,7 @@ class TestUtilityFunctions:
         
         bom, encoding = detect_bom(file_path)
         assert bom == codecs.BOM_UTF32_BE
-        assert encoding == 'utf-32-be'
+        assert encoding == 'utf-32'
     
     def test_read_write_file_preserves_bom(self, tmp_path):
         """Test that reading and writing preserves BOM."""
@@ -798,3 +798,136 @@ class TestApplyHeaders:
         
         # Verify good file was modified correctly
         assert "# Copyright 2025" in good_file.read_text()
+
+    def test_utf16_with_shebang_bom_stripped(self, tmp_path):
+        """Test that UTF-16 files with BOM and shebang correctly strip BOM character."""
+        import codecs
+        
+        # Create header file
+        header_file = tmp_path / "HEADER.txt"
+        header_file.write_text("# Copyright 2025\n")
+        
+        # Create UTF-16 LE file with BOM and shebang
+        test_file = tmp_path / "script.py"
+        content = "#!/usr/bin/env python\nprint('hello')\n"
+        with open(test_file, 'wb') as f:
+            f.write(codecs.BOM_UTF16_LE)
+            f.write(content.encode('utf-16-le'))
+        
+        # Apply header
+        cli_args = {'header': str(header_file)}
+        config = merge_config(cli_args, repo_root=tmp_path)
+        result = apply_headers(config)
+        
+        # Should be modified
+        assert len(result.modified_files) == 1
+        
+        # Read back and verify
+        with open(test_file, 'rb') as f:
+            raw_bytes = f.read()
+        
+        # Should still have BOM
+        assert raw_bytes.startswith(codecs.BOM_UTF16_LE)
+        
+        # Decode and check structure
+        bom, encoding = detect_bom(test_file)
+        assert bom == codecs.BOM_UTF16_LE
+        
+        content_read, bom_read, enc_read = read_file_with_encoding(test_file)
+        
+        # Content should NOT have BOM character
+        assert not content_read.startswith('\ufeff')
+        
+        # Should have shebang first, then header
+        assert content_read.startswith('#!/usr/bin/env python\n# Copyright 2025\n')
+        
+    def test_utf32_with_shebang_bom_stripped(self, tmp_path):
+        """Test that UTF-32 files with BOM and shebang correctly strip BOM character."""
+        import codecs
+        
+        # Create header file
+        header_file = tmp_path / "HEADER.txt"
+        header_file.write_text("# Copyright 2025\n")
+        
+        # Create UTF-32 LE file with BOM and shebang
+        test_file = tmp_path / "script.py"
+        content = "#!/usr/bin/env python\nprint('hello')\n"
+        with open(test_file, 'wb') as f:
+            f.write(codecs.BOM_UTF32_LE)
+            f.write(content.encode('utf-32-le'))
+        
+        # Apply header
+        cli_args = {'header': str(header_file)}
+        config = merge_config(cli_args, repo_root=tmp_path)
+        result = apply_headers(config)
+        
+        # Should be modified
+        assert len(result.modified_files) == 1
+        
+        # Read back and verify
+        with open(test_file, 'rb') as f:
+            raw_bytes = f.read()
+        
+        # Should still have BOM
+        assert raw_bytes.startswith(codecs.BOM_UTF32_LE)
+        
+        # Decode and check structure
+        bom, encoding = detect_bom(test_file)
+        assert bom == codecs.BOM_UTF32_LE
+        
+        content_read, bom_read, enc_read = read_file_with_encoding(test_file)
+        
+        # Content should NOT have BOM character
+        assert not content_read.startswith('\ufeff')
+        
+        # Should have shebang first, then header
+        assert content_read.startswith('#!/usr/bin/env python\n# Copyright 2025\n')
+    
+    def test_utf16_with_shebang_idempotent(self, tmp_path):
+        """Test that UTF-16 files with shebang remain idempotent after header insertion."""
+        import codecs
+        
+        # Create header file
+        header_file = tmp_path / "HEADER.txt"
+        header_file.write_text("# Copyright 2025\n")
+        
+        # Create UTF-16 BE file with BOM and shebang
+        test_file = tmp_path / "script.py"
+        content = "#!/usr/bin/env python\nprint('hello')\n"
+        with open(test_file, 'wb') as f:
+            f.write(codecs.BOM_UTF16_BE)
+            f.write(content.encode('utf-16-be'))
+        
+        # Apply header first time
+        cli_args = {'header': str(header_file)}
+        config = merge_config(cli_args, repo_root=tmp_path)
+        result1 = apply_headers(config)
+        assert len(result1.modified_files) == 1
+        
+        # Read file size after first application
+        size_after_first = test_file.stat().st_size
+        
+        # Apply header second time
+        result2 = apply_headers(config)
+        assert len(result2.already_compliant) == 1
+        assert len(result2.modified_files) == 0
+        
+        # File size should be unchanged (idempotent)
+        size_after_second = test_file.stat().st_size
+        assert size_after_first == size_after_second
+        
+        # Verify BOM is not duplicated
+        with open(test_file, 'rb') as f:
+            raw_bytes = f.read()
+        
+        # Count BOM occurrences - should be exactly 1
+        bom_count = 0
+        i = 0
+        while i < len(raw_bytes) - 1:
+            if raw_bytes[i:i+2] == codecs.BOM_UTF16_BE:
+                bom_count += 1
+                i += 2
+            else:
+                i += 1
+        
+        assert bom_count == 1, f"Expected 1 BOM, found {bom_count}"

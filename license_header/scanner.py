@@ -54,6 +54,9 @@ def is_binary_file(file_path: Path) -> bool:
     """
     Detect if a file is binary by checking for null bytes in the first chunk.
     
+    BOM-encoded text files (UTF-16/UTF-32) are treated as text even though they
+    contain null bytes as part of their character encoding.
+    
     Args:
         file_path: Path to the file to check
         
@@ -61,6 +64,14 @@ def is_binary_file(file_path: Path) -> bool:
         True if file appears to be binary, False otherwise
     """
     try:
+        from license_header.utils import detect_bom
+        
+        # Check for BOM first - if present, it's a text file with specific encoding
+        bom, encoding = detect_bom(file_path)
+        if bom is not None:
+            # File has BOM, treat as text
+            return False
+        
         # Read first 8KB to check for binary content
         with open(file_path, 'rb') as f:
             chunk = f.read(8192)

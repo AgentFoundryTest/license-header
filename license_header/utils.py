@@ -20,10 +20,20 @@ BOM_UTF32_BE = codecs.BOM_UTF32_BE
 
 # Map BOM to encoding name
 # Order matters: check longer BOMs first to avoid UTF-32 LE being misdetected as UTF-16 LE
+# Use encodings that strip BOM character from decoded text (utf-16/utf-32 instead of utf-16-le/utf-32-le)
 BOM_TO_ENCODING = {
+    BOM_UTF32_LE: 'utf-32',
+    BOM_UTF32_BE: 'utf-32',
+    BOM_UTF8: 'utf-8-sig',
+    BOM_UTF16_LE: 'utf-16',
+    BOM_UTF16_BE: 'utf-16',
+}
+
+# Map BOM to specific encoding for writing (without BOM character in output)
+BOM_TO_WRITE_ENCODING = {
     BOM_UTF32_LE: 'utf-32-le',
     BOM_UTF32_BE: 'utf-32-be',
-    BOM_UTF8: 'utf-8-sig',
+    BOM_UTF8: 'utf-8',
     BOM_UTF16_LE: 'utf-16-le',
     BOM_UTF16_BE: 'utf-16-be',
 }
@@ -138,11 +148,13 @@ def write_file_with_encoding(
     try:
         # If we have a BOM, write it in binary mode first
         if bom is not None:
+            # Determine the write encoding based on the BOM
+            write_encoding = BOM_TO_WRITE_ENCODING.get(bom, encoding.replace('-sig', ''))
             with open(file_path, 'wb') as f:
                 f.write(bom)
                 # Use newline='' mode encoding to preserve line endings
                 # Encode the content with the proper encoding, preserving CRLF/LF
-                f.write(content.encode(encoding.replace('-sig', '')))
+                f.write(content.encode(write_encoding))
         else:
             # Use newline='' to preserve original line endings in the content
             with open(file_path, 'w', encoding=encoding, newline='') as f:
