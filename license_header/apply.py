@@ -299,7 +299,7 @@ def apply_headers(config: Config) -> ApplyResult:
             else:
                 result.already_compliant.append(file_path)
                 
-        except (PermissionError, OSError, IOError) as e:
+        except (PermissionError, OSError, IOError, UnicodeDecodeError) as e:
             logger.error(f"Failed to process {file_path}: {e}")
             result.failed_files.append(file_path)
     
