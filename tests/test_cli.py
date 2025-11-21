@@ -160,6 +160,26 @@ class TestApplyCommand:
             ])
             assert result.exit_code == 0
             assert 'Exclude paths: dist, build' in result.output
+    
+    def test_apply_with_default_license_header(self):
+        """Test apply command with default LICENSE_HEADER file."""
+        with self.runner.isolated_filesystem():
+            Path('LICENSE_HEADER').write_text('# Default Header\n')
+            
+            result = self.runner.invoke(main, ['apply', '--dry-run'])
+            assert result.exit_code == 0
+            assert 'Configuration loaded successfully' in result.output
+            assert 'Header file: LICENSE_HEADER' in result.output
+    
+    def test_apply_cli_overrides_default_license_header(self):
+        """Test that --header flag overrides default LICENSE_HEADER."""
+        with self.runner.isolated_filesystem():
+            Path('LICENSE_HEADER').write_text('# Default\n')
+            Path('CUSTOM.txt').write_text('# Custom\n')
+            
+            result = self.runner.invoke(main, ['apply', '--header', 'CUSTOM.txt', '--dry-run'])
+            assert result.exit_code == 0
+            assert 'Header file: CUSTOM.txt' in result.output
 
 
 class TestCheckCommand:

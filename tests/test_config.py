@@ -240,6 +240,53 @@ class TestMergeConfig:
         
         config = merge_config(cli_args, repo_root=tmp_path)
         assert config.header_file == "HEADER.txt"
+    
+    def test_merge_with_default_license_header(self, tmp_path):
+        """Test merging config with default LICENSE_HEADER file."""
+        # Create default LICENSE_HEADER file
+        header_file = tmp_path / "LICENSE_HEADER"
+        header_content = "# Default Header\n"
+        header_file.write_text(header_content)
+        
+        cli_args = {}
+        
+        config = merge_config(cli_args, repo_root=tmp_path)
+        assert config.header_file == "LICENSE_HEADER"
+        # Verify content was loaded
+        assert get_header_content(config) == header_content
+    
+    def test_merge_cli_overrides_default_license_header(self, tmp_path):
+        """Test that CLI header flag overrides default LICENSE_HEADER."""
+        # Create both default and custom header files
+        default_header = tmp_path / "LICENSE_HEADER"
+        default_header.write_text("# Default\n")
+        
+        custom_header = tmp_path / "CUSTOM.txt"
+        custom_header.write_text("# Custom\n")
+        
+        cli_args = {'header': 'CUSTOM.txt'}
+        
+        config = merge_config(cli_args, repo_root=tmp_path)
+        assert config.header_file == "CUSTOM.txt"
+    
+    def test_merge_config_file_overrides_default_license_header(self, tmp_path):
+        """Test that config file header overrides default LICENSE_HEADER."""
+        # Create both default header and custom header
+        default_header = tmp_path / "LICENSE_HEADER"
+        default_header.write_text("# Default\n")
+        
+        custom_header = tmp_path / "CUSTOM.txt"
+        custom_header.write_text("# Custom\n")
+        
+        # Create config file
+        config_file = tmp_path / "license-header.config.json"
+        config_data = {"header_file": "CUSTOM.txt"}
+        config_file.write_text(json.dumps(config_data))
+        
+        cli_args = {}
+        
+        config = merge_config(cli_args, repo_root=tmp_path)
+        assert config.header_file == "CUSTOM.txt"
 
 
 class TestGetHeaderContent:

@@ -260,14 +260,19 @@ def merge_config(
             else:
                 config_data[key] = value
     
-    # Validate required fields
+    # Validate required fields - check for default LICENSE_HEADER if not specified
     if 'header_file' not in config_data:
-        raise click.ClickException(
-            "Header file is required. Specify it via:\n"
-            "  - CLI flag: --header <path>\n"
-            "  - Config file: 'header_file' key\n"
-            "  - Default: 'LICENSE_HEADER' file in repository root"
-        )
+        default_header = repo_root / 'LICENSE_HEADER'
+        if default_header.exists():
+            config_data['header_file'] = 'LICENSE_HEADER'
+            logger.info(f"Using default header file: {default_header}")
+        else:
+            raise click.ClickException(
+                "Header file is required. Specify it via:\n"
+                "  - CLI flag: --header <path>\n"
+                "  - Config file: 'header_file' key\n"
+                "  - Default: 'LICENSE_HEADER' file in repository root"
+            )
     
     # Validate and warn about extensions and patterns
     validate_extensions(config_data['include_extensions'])
