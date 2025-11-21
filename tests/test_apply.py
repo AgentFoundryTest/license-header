@@ -101,6 +101,42 @@ class TestUtilityFunctions:
         assert bom is None
         assert encoding == 'utf-8'
     
+    def test_detect_bom_utf16_le(self, tmp_path):
+        """Test detecting UTF-16 LE BOM."""
+        import codecs
+        file_path = tmp_path / "test_utf16le.txt"
+        with open(file_path, 'wb') as f:
+            f.write(codecs.BOM_UTF16_LE)
+            f.write("Hello".encode('utf-16-le'))
+        
+        bom, encoding = detect_bom(file_path)
+        assert bom == codecs.BOM_UTF16_LE
+        assert encoding == 'utf-16-le'
+    
+    def test_detect_bom_utf32_le(self, tmp_path):
+        """Test detecting UTF-32 LE BOM (should not be misdetected as UTF-16 LE)."""
+        import codecs
+        file_path = tmp_path / "test_utf32le.txt"
+        with open(file_path, 'wb') as f:
+            f.write(codecs.BOM_UTF32_LE)
+            f.write("Hello".encode('utf-32-le'))
+        
+        bom, encoding = detect_bom(file_path)
+        assert bom == codecs.BOM_UTF32_LE, f"Expected UTF-32 LE BOM, got {bom.hex() if bom else None}"
+        assert encoding == 'utf-32-le', f"Expected utf-32-le encoding, got {encoding}"
+    
+    def test_detect_bom_utf32_be(self, tmp_path):
+        """Test detecting UTF-32 BE BOM."""
+        import codecs
+        file_path = tmp_path / "test_utf32be.txt"
+        with open(file_path, 'wb') as f:
+            f.write(codecs.BOM_UTF32_BE)
+            f.write("Hello".encode('utf-32-be'))
+        
+        bom, encoding = detect_bom(file_path)
+        assert bom == codecs.BOM_UTF32_BE
+        assert encoding == 'utf-32-be'
+    
     def test_read_write_file_preserves_bom(self, tmp_path):
         """Test that reading and writing preserves BOM."""
         file_path = tmp_path / "test_bom.txt"

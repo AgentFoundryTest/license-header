@@ -19,12 +19,13 @@ BOM_UTF32_LE = codecs.BOM_UTF32_LE
 BOM_UTF32_BE = codecs.BOM_UTF32_BE
 
 # Map BOM to encoding name
+# Order matters: check longer BOMs first to avoid UTF-32 LE being misdetected as UTF-16 LE
 BOM_TO_ENCODING = {
+    BOM_UTF32_LE: 'utf-32-le',
+    BOM_UTF32_BE: 'utf-32-be',
     BOM_UTF8: 'utf-8-sig',
     BOM_UTF16_LE: 'utf-16-le',
     BOM_UTF16_BE: 'utf-16-be',
-    BOM_UTF32_LE: 'utf-32-le',
-    BOM_UTF32_BE: 'utf-32-be',
 }
 
 
