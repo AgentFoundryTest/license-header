@@ -111,7 +111,7 @@ Summary:
   Eligible: 100
   Added: 5              # Files that would get headers
   Compliant: 95         # Files already compliant
-  Skipped-binary: 50
+  Skipped: 50
   Failed: 0
 
 [DRY RUN] Files that would be modified:
@@ -133,7 +133,7 @@ Summary:
   Eligible: 100         # Files that match extensions and aren't excluded
   Added: 5              # Files that had headers added
   Compliant: 95         # Files that already had correct headers
-  Skipped-binary: 50    # Binary files and excluded files
+  Skipped: 50           # Binary, excluded, symlink, and other skipped files
   Failed: 0             # Files that couldn't be processed
 ```
 
@@ -175,7 +175,7 @@ Summary:
   Eligible: 100         # Files that match extensions and aren't excluded
   Compliant: 95         # Files with correct headers
   Non-compliant: 5      # Files missing headers
-  Skipped-binary: 50    # Binary files and excluded files
+  Skipped: 50           # Binary, excluded, symlink, and other skipped files
   Failed: 0             # Files that couldn't be read
 ```
 

@@ -98,7 +98,7 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
         click.echo(f"  Eligible: {len(result.modified_files) + len(result.already_compliant)}")
         click.echo(f"  Added: {len(result.modified_files)}")
         click.echo(f"  Compliant: {len(result.already_compliant)}")
-        click.echo(f"  Skipped-binary: {len(result.skipped_files)}")
+        click.echo(f"  Skipped: {len(result.skipped_files)}")
         click.echo(f"  Failed: {len(result.failed_files)}")
         click.echo()
         
@@ -196,7 +196,7 @@ def check(config, header, path, output, include_extension, exclude_path, dry_run
         click.echo(f"  Eligible: {result.total_eligible()}")
         click.echo(f"  Compliant: {len(result.compliant_files)}")
         click.echo(f"  Non-compliant: {len(result.non_compliant_files)}")
-        click.echo(f"  Skipped-binary: {len(result.skipped_files)}")
+        click.echo(f"  Skipped: {len(result.skipped_files)}")
         click.echo(f"  Failed: {len(result.failed_files)}")
         click.echo()
         
