@@ -199,6 +199,18 @@ class TestApplyCommand:
             finally:
                 # Clean up
                 os.unlink(abs_header_path)
+    
+    def test_apply_with_config_path_outside_repo_rejected(self):
+        """Test that config paths escaping repo are rejected."""
+        with self.runner.isolated_filesystem():
+            # Create header file
+            Path('HEADER.txt').write_text('# Copyright\n')
+            
+            # Try to use a config path that escapes the repo
+            result = self.runner.invoke(main, ['apply', '--config', '../outside_config.json', '--dry-run'])
+            assert result.exit_code != 0
+            assert 'Configuration file path' in result.output
+            assert 'traverses above repository root' in result.output
 
 
 class TestCheckCommand:

@@ -230,6 +230,9 @@ def merge_config(
         config_path = Path(config_file_path)
         if not config_path.is_absolute():
             config_path = repo_root / config_path
+        # Validate that relative config paths don't escape the repository
+        if not Path(config_file_path).is_absolute():
+            validate_path_in_repo(config_path, repo_root, "Configuration file path")
         config_file_data = load_config_file(config_path)
     else:
         # Check for default config file

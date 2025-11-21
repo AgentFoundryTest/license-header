@@ -297,6 +297,20 @@ class TestMergeConfig:
         
         config = merge_config(cli_args, repo_root=tmp_path)
         assert config.header_file == "CUSTOM.txt"
+    
+    def test_merge_config_path_outside_repo_rejected(self, tmp_path):
+        """Test that config file paths escaping repo root are rejected."""
+        # Create header file
+        header_file = tmp_path / "HEADER.txt"
+        header_file.write_text("# Header\n")
+        
+        # Try to use a relative config path that escapes the repo
+        cli_args = {}
+        
+        with pytest.raises(ClickException) as exc_info:
+            merge_config(cli_args, config_file_path="../outside_config.json", repo_root=tmp_path)
+        assert "Configuration file path" in str(exc_info.value)
+        assert "traverses above repository root" in str(exc_info.value)
 
 
 class TestGetHeaderContent:
