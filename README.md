@@ -148,9 +148,6 @@ license-header check
 # Check specific path
 license-header check --path /path/to/project
 
-# Fail on any missing or incorrect headers (recommended for CI)
-license-header check --strict
-
 # Generate JSON and Markdown reports
 license-header check --output reports/
 
@@ -163,7 +160,7 @@ license-header check --config my-config.json
 
 **Check Mode Behavior:**
 
-- **Exit Codes**: Without `--strict`, exits with code 0 even if files are non-compliant. With `--strict`, exits with code 1 if any files are missing headers or fail to be checked.
+- **Exit Codes**: Exits with code 1 (failure) if any files are missing headers or fail to be checked. Exits with code 0 (success) only when all eligible files have correct headers.
 - **Non-Compliant Files**: Lists all files that are missing the required license header.
 - **Reports**: When `--output` is specified, generates both JSON and Markdown reports with detailed results.
 - **Dry Run**: With `--dry-run`, performs the check but skips report generation (useful for preview).
@@ -209,7 +206,6 @@ Create a `license-header.config.json` file in your repository root:
 | **Output Directory** | `--output` | `output_dir` | None (modify in-place) | Directory to save modified files (apply mode) or reports (check mode) |
 | **Target Path** | `--path` | N/A | `.` (current directory) | Path to scan for source files |
 | **Dry Run** | `--dry-run` | N/A | `false` | Preview results without modifying files (both apply and check modes) |
-| **Strict Mode** | `--strict` | N/A | `false` | Fail with non-zero exit code on any issues (check mode only) |
 | **Config File** | `--config` | N/A | `license-header.config.json` if present | Path to custom configuration file |
 
 ### Repository Traversal
@@ -321,7 +317,7 @@ license-header apply --include-extension .py --dry-run
 #### Using custom configuration file
 
 ```bash
-license-header check --config configs/strict-config.json --strict
+license-header check --config configs/custom-config.json
 ```
 
 ### Path Validation
@@ -461,7 +457,7 @@ Reports are particularly useful in CI/CD pipelines:
 ```yaml
 - name: Check license headers
   run: |
-    license-header check --strict --output reports/
+    license-header check --output reports/
   
 - name: Upload reports
   if: always()
@@ -568,12 +564,12 @@ jobs:
       - name: Install license-header
         run: pip install -e .
       
-      - name: Check license headers (strict mode)
-        run: license-header check --strict
+      - name: Check license headers
+        run: license-header check
 ```
 
 **Key Points:**
-- The workflow **fails** if any files are missing license headers (due to `--strict`)
+- The workflow **fails** if any files are missing license headers (check mode fails by default)
 - Exit code 1 causes the GitHub Actions workflow to fail
 - No files are modified; this is a read-only check
 
@@ -601,7 +597,7 @@ jobs:
         run: pip install -e .
       
       - name: Check license headers
-        run: license-header check --strict --output reports/
+        run: license-header check --output reports/
       
       - name: Upload reports
         if: always()  # Upload even if check fails
@@ -664,7 +660,7 @@ jobs:
 
 ### CI Best Practices
 
-1. **Always use `--strict`** in CI to fail builds on missing headers
+1. **Use check mode** to fail builds on missing headers (fails by default)
 2. **Generate reports** for debugging when checks fail
 3. **Use `--dry-run` locally** before committing to see what would change
 4. **Pin Python version** (e.g., `3.11`) for reproducibility

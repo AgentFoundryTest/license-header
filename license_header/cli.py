@@ -241,13 +241,11 @@ def check(config, header, path, output, include_extension, exclude_path, dry_run
             click.echo()
         
         # Determine exit code
+        # Check mode should fail by default when there are non-compliant files
         if result.non_compliant_files or result.failed_files:
-            if strict or cfg.strict:
-                logger.error(f"Check failed: {len(result.non_compliant_files)} non-compliant, {len(result.failed_files)} failed")
-                click.echo("Check FAILED: Files are missing license headers or could not be checked.", err=True)
-                sys.exit(1)
-            else:
-                click.echo("Check completed with issues (use --strict to fail on issues).")
+            logger.error(f"Check failed: {len(result.non_compliant_files)} non-compliant, {len(result.failed_files)} failed")
+            click.echo("Check FAILED: Files are missing license headers or could not be checked.", err=True)
+            sys.exit(1)
         else:
             click.echo("Check PASSED: All files have correct license headers.")
         
