@@ -3,7 +3,9 @@ Tests for CLI module.
 """
 
 import json
+import os
 import pytest
+import tempfile
 from pathlib import Path
 from click.testing import CliRunner
 
@@ -185,7 +187,6 @@ class TestApplyCommand:
         """Test apply command with absolute path to header file."""
         with self.runner.isolated_filesystem():
             # Create a header file with absolute path
-            import tempfile
             with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
                 f.write('# Absolute Path Header\n')
                 abs_header_path = f.name
@@ -197,7 +198,6 @@ class TestApplyCommand:
                 assert abs_header_path in result.output
             finally:
                 # Clean up
-                import os
                 os.unlink(abs_header_path)
 
 
