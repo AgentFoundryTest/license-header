@@ -133,7 +133,7 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
                 click.echo(f"Reports written to {output_path}")
             except Exception as e:
                 logger.error(f"Failed to generate reports: {e}")
-                click.echo(f"Warning: Failed to generate reports: {e}", err=True)
+                raise click.ClickException(f"Failed to generate reports: {e}")
         
         logger.info("Apply command completed successfully")
         
@@ -228,7 +228,7 @@ def check(config, header, path, output, include_extension, exclude_path, dry_run
                 click.echo()
             except Exception as e:
                 logger.error(f"Failed to generate reports: {e}")
-                click.echo(f"Warning: Failed to generate reports: {e}", err=True)
+                raise click.ClickException(f"Failed to generate reports: {e}")
         elif cfg.output_dir and dry_run:
             click.echo(f"[DRY RUN] Would generate reports in {cfg.output_dir}")
             click.echo()
