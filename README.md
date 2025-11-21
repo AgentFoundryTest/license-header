@@ -690,6 +690,11 @@ This project is under active development. All core features are implemented and 
 - ✅ Deterministic summary counters
 - ✅ GitHub Actions integration examples
 
+### Known Limitations
+
+- **Single Header per Project**: Currently, the tool uses a single header file for all source files. Per-file or per-extension custom headers are not yet supported. All files processed by the tool will receive the same header content.
+- **Report File Limits**: Markdown reports truncate large file lists to the first 100 entries for readability. Full file lists are always available in the JSON reports.
+
 
 
 # Permanents (License, Contributing, Author)
