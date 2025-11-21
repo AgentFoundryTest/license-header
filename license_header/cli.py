@@ -148,7 +148,7 @@ def check(config, header, path, output, include_extension, exclude_path, dry_run
         if dry_run:
             click.echo(f"[DRY RUN] Would check license headers in: {path}")
         else:
-            click.echo(f"Checking license headers in: {path}")
+            click.echo(f"Would check license headers in: {path}")
         if strict:
             click.echo("Running in strict mode - will fail on any issues.")
         
