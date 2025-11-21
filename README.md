@@ -140,12 +140,59 @@ Create a `license-header.config.json` file in your repository root:
 |--------|----------|----------------|---------|-------------|
 | **Header File** | `--header` | `header_file` | `LICENSE_HEADER` if present, else required | Path to the license header file (relative to repo root or absolute) |
 | **Include Extensions** | `--include-extension` | `include_extensions` | `[".py", ".js", ".ts", ".java", ".cpp", ".c", ".h"]` | File extensions to process. CLI flag can be specified multiple times. |
-| **Exclude Paths** | `--exclude-path` | `exclude_paths` | `["node_modules", ".git", "__pycache__", "venv", "env", ".venv"]` | Paths/patterns to exclude from processing. CLI flag can be specified multiple times. |
+| **Exclude Paths** | `--exclude-path` | `exclude_paths` | `["node_modules", ".git", "__pycache__", "venv", "env", ".venv", "dist", "build"]` | Paths/patterns to exclude from processing. CLI flag can be specified multiple times. |
 | **Output Directory** | `--output` | `output_dir` | None (modify in-place) | Directory to save modified files (apply mode) or reports (check mode) |
 | **Target Path** | `--path` | N/A | `.` (current directory) | Path to scan for source files |
 | **Dry Run** | `--dry-run` | N/A | `false` | Preview results without modifying files (both apply and check modes) |
 | **Strict Mode** | `--strict` | N/A | `false` | Fail with non-zero exit code on any issues (check mode only) |
 | **Config File** | `--config` | N/A | `license-header.config.json` if present | Path to custom configuration file |
+
+### Repository Traversal
+
+The tool uses a deterministic repository scanner to identify eligible source files based on configured extensions and exclude patterns.
+
+#### Traversal Behavior
+
+- **Iterative scanning**: Uses non-recursive directory walking to handle deep directory trees without stack overflow
+- **Deterministic ordering**: Results are consistently sorted for reproducible behavior across platforms
+- **Default excludes**: Automatically skips common noise directories:
+  - `.git` - Git repository metadata
+  - `.venv`, `venv`, `env` - Python virtual environments
+  - `node_modules` - Node.js dependencies
+  - `__pycache__` - Python bytecode cache
+  - `dist` - Distribution/build output
+  - `build` - Build artifacts
+- **Binary detection**: Automatically detects and skips binary files by checking for null bytes
+- **Symlink handling**: Symbolic links are detected and skipped to avoid infinite loops and duplicate processing
+- **Permission errors**: Files that cannot be read due to permission errors are logged and skipped without aborting the scan
+- **Case-insensitive extensions**: File extensions are matched case-insensitively (e.g., `.py`, `.PY`, and `.Py` all match)
+
+#### Customizing Exclusions
+
+You can add custom exclude patterns to the default list:
+
+```bash
+# Exclude additional directories via CLI
+license-header apply --exclude-path vendor --exclude-path generated
+
+# Or via configuration file
+{
+  "exclude_paths": ["vendor", "generated", "third_party"]
+}
+```
+
+Note: Custom exclude patterns are added to (not replacing) the default excludes. Patterns match directory and file names anywhere in the path.
+
+#### Edge Cases
+
+The scanner handles several edge cases robustly:
+
+- **Deep directory trees**: Can handle directories nested >1000 levels deep without recursion limits
+- **Circular symlinks**: Detected and skipped without causing infinite loops or crashes
+- **Read permission errors**: Logged as warnings but do not abort the scan
+- **Case-insensitive filesystems**: Extensions are matched consistently regardless of case
+- **Binary files with text extensions**: Files are checked for binary content even if they have text file extensions
+- **Paths outside repository**: Files outside the repository root are automatically excluded
 
 ### Configuration Precedence
 
@@ -244,7 +291,7 @@ jobs:
 
 ## Development Status
 
-This project is in early development. Configuration loading and CLI options are fully implemented.
+This project is in early development. Configuration loading, CLI options, and repository scanning are fully implemented.
 
 ### Current Status
 
@@ -257,9 +304,12 @@ This project is in early development. Configuration loading and CLI options are 
 - ✅ Configuration merging with proper precedence
 - ✅ Path validation and security checks
 - ✅ Header file loading and validation
+- ✅ Repository traversal with deterministic file scanning
+- ✅ File extension filtering and exclude pattern matching
+- ✅ Binary file detection
+- ✅ Symlink handling and circular reference detection
 - ⏳ Header scanning logic (planned)
 - ⏳ Header application logic (planned)
-- ⏳ File pattern matching (planned)
 
 
 
