@@ -322,14 +322,9 @@ def apply_headers(config: Config) -> ApplyResult:
     logger.info(f"Found {len(scan_result.eligible_files)} eligible files")
     
     # Process output directory if specified
+    # NOTE: output_dir is NOT used for file copying in apply mode
+    # Files are always modified in-place. output_dir is reserved for report generation.
     output_dir = None
-    if config.output_dir:
-        output_dir = Path(config.output_dir)
-        if not output_dir.is_absolute():
-            output_dir = repo_root / output_dir
-        
-        if not config.dry_run:
-            output_dir.mkdir(parents=True, exist_ok=True)
     
     # Apply header to each eligible file
     for file_path in scan_result.eligible_files:

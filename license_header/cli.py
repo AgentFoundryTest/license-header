@@ -50,12 +50,12 @@ def main():
 @click.option('--config', type=str, help='Path to configuration file (default: license-header.config.json if present)')
 @click.option('--header', type=str, help='Path to license header file')
 @click.option('--path', default='.', help='Path to apply license headers (default: current directory)')
-@click.option('--output', type=str, help='Output directory for modified files (default: modify in place)')
+@click.option('--output', type=str, help='Output directory for report files (default: no reports generated)')
 @click.option('--include-extension', multiple=True, help='File extensions to include (e.g., .py, .js). Can be specified multiple times.')
 @click.option('--exclude-path', multiple=True, help='Paths/patterns to exclude (e.g., node_modules). Can be specified multiple times.')
 @click.option('--dry-run', is_flag=True, help='Preview changes without modifying files')
 def apply(config, header, path, output, include_extension, exclude_path, dry_run):
-    """Apply license headers to source files."""
+    """Apply license headers to source files (modifies files in-place)."""
     logger.info(f"Apply command called with path='{path}', dry_run={dry_run}")
     
     try:
@@ -90,6 +90,8 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
         
         # Apply headers
         logger.info("Applying license headers...")
+        # Note: We don't pass output_dir to apply_headers - it's only used for report generation
+        # Apply always modifies files in-place
         result = apply_headers(cfg)
         
         # Display summary

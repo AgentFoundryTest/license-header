@@ -92,11 +92,8 @@ license-header apply --include-extension .py --include-extension .js
 # Exclude specific paths
 license-header apply --exclude-path dist --exclude-path build
 
-# Generate JSON and Markdown reports
+# Generate JSON and Markdown reports (files modified in-place)
 license-header apply --output reports/
-
-# Save modified files to output directory (instead of in-place)
-license-header apply --output ./modified-files
 ```
 
 **Dry Run Mode:**
@@ -203,7 +200,7 @@ Create a `license-header.config.json` file in your repository root:
 | **Header File** | `--header` | `header_file` | `LICENSE_HEADER` if present, else required | Path to the license header file (relative to repo root or absolute) |
 | **Include Extensions** | `--include-extension` | `include_extensions` | `[".py", ".js", ".ts", ".java", ".cpp", ".c", ".h"]` | File extensions to process. CLI flag can be specified multiple times. |
 | **Exclude Paths** | `--exclude-path` | `exclude_paths` | `["node_modules", ".git", "__pycache__", "venv", "env", ".venv", "dist", "build"]` | Paths/patterns to exclude from processing. CLI flag can be specified multiple times. |
-| **Output Directory** | `--output` | `output_dir` | None (modify in-place) | Directory to save modified files (apply mode) or reports (check mode) |
+| **Output Directory** | `--output` | `output_dir` | None (no reports) | Directory to save report files (JSON and Markdown) - files are always modified in-place |
 | **Target Path** | `--path` | N/A | `.` (current directory) | Path to scan for source files |
 | **Dry Run** | `--dry-run` | N/A | `false` | Preview results without modifying files (both apply and check modes) |
 | **Config File** | `--config` | N/A | `license-header.config.json` if present | Path to custom configuration file |
