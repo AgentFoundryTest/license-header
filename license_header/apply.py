@@ -93,7 +93,6 @@ def has_header(content: str, header: str) -> bool:
         start_idx += 1
     
     # Reconstruct content without leading whitespace
-    content_without_leading_ws = '\n'.join(lines[start_idx:])
     if start_idx < len(lines):
         content_without_leading_ws = '\n'.join(lines[start_idx:])
         if content_without_leading_ws.startswith(normalized_header.rstrip()):
