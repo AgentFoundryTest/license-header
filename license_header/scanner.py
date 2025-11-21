@@ -9,7 +9,7 @@ import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -101,35 +101,6 @@ def matches_exclude_pattern(path: Path, repo_root: Path, exclude_patterns: List[
         return True
     
     return False
-
-
-def is_safe_symlink(path: Path, visited_paths: Set[Path]) -> bool:
-    """
-    Check if a symlink is safe to follow (not circular).
-    
-    Args:
-        path: Path to check
-        visited_paths: Set of already visited paths
-        
-    Returns:
-        True if safe to follow, False otherwise
-    """
-    try:
-        # Resolve the symlink
-        resolved = path.resolve()
-        
-        # Check if we've already visited this path (circular reference)
-        if resolved in visited_paths:
-            logger.debug(f"Circular symlink detected: {path} -> {resolved}")
-            return False
-        
-        # Check if the symlink points outside the repository
-        # This is handled by the caller checking relative_to()
-        
-        return True
-    except (OSError, RuntimeError) as e:
-        logger.warning(f"Error resolving symlink {path}: {e}")
-        return False
 
 
 def scan_repository(

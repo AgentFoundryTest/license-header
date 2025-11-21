@@ -10,7 +10,6 @@ from license_header.scanner import (
     ScanResult,
     is_binary_file,
     matches_exclude_pattern,
-    is_safe_symlink,
     scan_repository,
     DEFAULT_EXCLUDE_DIRS,
 )
@@ -122,33 +121,6 @@ class TestMatchesExcludePattern:
         assert matches_exclude_pattern(outside_path, tmp_path, [])
 
 
-class TestIsSafeSymlink:
-    """Test is_safe_symlink function."""
-    
-    def test_safe_symlink(self, tmp_path):
-        """Test that non-circular symlinks are safe."""
-        target = tmp_path / "target.txt"
-        target.write_text("content")
-        
-        link = tmp_path / "link.txt"
-        link.symlink_to(target)
-        
-        visited = set()
-        assert is_safe_symlink(link, visited)
-    
-    def test_circular_symlink(self, tmp_path):
-        """Test that circular symlinks are detected."""
-        target = tmp_path / "target.txt"
-        target.write_text("content")
-        
-        link = tmp_path / "link.txt"
-        link.symlink_to(target)
-        
-        # Add resolved path to visited
-        visited = {link.resolve()}
-        
-        # Should detect circular reference
-        assert not is_safe_symlink(link, visited)
 
 
 class TestScanRepository:
