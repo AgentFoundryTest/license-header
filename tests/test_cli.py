@@ -188,6 +188,27 @@ class TestCheckCommand:
             assert 'Strict mode: True' in result.output
             assert 'Running in strict mode' in result.output
     
+    def test_check_dry_run_mode(self):
+        """Test check command with dry-run mode."""
+        with self.runner.isolated_filesystem():
+            Path('HEADER.txt').write_text('# Copyright\n')
+            
+            result = self.runner.invoke(main, ['check', '--header', 'HEADER.txt', '--dry-run'])
+            assert result.exit_code == 0
+            assert 'Dry run: True' in result.output
+            assert '[DRY RUN] Would check license headers' in result.output
+    
+    def test_check_dry_run_with_strict(self):
+        """Test check command with both dry-run and strict modes."""
+        with self.runner.isolated_filesystem():
+            Path('HEADER.txt').write_text('# Copyright\n')
+            
+            result = self.runner.invoke(main, ['check', '--header', 'HEADER.txt', '--dry-run', '--strict'])
+            assert result.exit_code == 0
+            assert 'Dry run: True' in result.output
+            assert 'Strict mode: True' in result.output
+            assert '[DRY RUN] Would check license headers' in result.output
+    
     def test_check_missing_header_file(self):
         """Test check command with missing header file."""
         with self.runner.isolated_filesystem():

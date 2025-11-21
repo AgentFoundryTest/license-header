@@ -107,10 +107,11 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
 @click.option('--output', type=str, help='Output directory for report files (default: none)')
 @click.option('--include-extension', multiple=True, help='File extensions to include (e.g., .py, .js). Can be specified multiple times.')
 @click.option('--exclude-path', multiple=True, help='Paths/patterns to exclude (e.g., node_modules). Can be specified multiple times.')
+@click.option('--dry-run', is_flag=True, help='Preview check results without performing actions')
 @click.option('--strict', is_flag=True, help='Fail on any missing or incorrect headers')
-def check(config, header, path, output, include_extension, exclude_path, strict):
+def check(config, header, path, output, include_extension, exclude_path, dry_run, strict):
     """Check source files for correct license headers."""
-    logger.info(f"Check command called with path='{path}', strict={strict}")
+    logger.info(f"Check command called with path='{path}', strict={strict}, dry_run={dry_run}")
     
     try:
         # Build CLI args dictionary
@@ -120,6 +121,7 @@ def check(config, header, path, output, include_extension, exclude_path, strict)
             'output_dir': output,
             'include_extension': list(include_extension) if include_extension else None,
             'exclude_path': list(exclude_path) if exclude_path else None,
+            'dry_run': dry_run,
             'strict': strict,
             'mode': 'check',
         }
@@ -138,11 +140,15 @@ def check(config, header, path, output, include_extension, exclude_path, strict)
         click.echo(f"  Exclude paths: {', '.join(cfg.exclude_paths)}")
         if cfg.output_dir:
             click.echo(f"  Output directory: {cfg.output_dir}")
+        click.echo(f"  Dry run: {cfg.dry_run}")
         click.echo(f"  Strict mode: {cfg.strict}")
         click.echo(f"  Header content loaded: {len(header_content)} characters")
         click.echo()
         
-        click.echo(f"Checking license headers in: {path}")
+        if dry_run:
+            click.echo(f"[DRY RUN] Would check license headers in: {path}")
+        else:
+            click.echo(f"Checking license headers in: {path}")
         if strict:
             click.echo("Running in strict mode - will fail on any issues.")
         
