@@ -142,16 +142,20 @@ def matches_exclude_pattern(path: Path, repo_root: Path, exclude_patterns: List[
     simple directory name.
     
     Args:
-        path: Path to check (absolute)
-        repo_root: Repository root path
+        path: Path to check (can be relative or absolute)
+        repo_root: Repository root path (can be relative or absolute)
         exclude_patterns: List of exclude patterns/globs
         
     Returns:
         True if path matches any exclude pattern, False otherwise
     """
     try:
+        # Resolve both paths to absolute to ensure relative_to works correctly
+        abs_path = path.resolve()
+        abs_repo_root = repo_root.resolve()
+        
         # Get path relative to repo root for matching
-        rel_path = path.relative_to(repo_root)
+        rel_path = abs_path.relative_to(abs_repo_root)
         
         # Check each pattern
         for pattern in exclude_patterns:

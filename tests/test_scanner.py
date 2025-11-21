@@ -585,3 +585,31 @@ class TestScanRepository:
         # Should find the file in dir_a
         assert len(result.eligible_files) == 1
         assert 'file.py' in str(result.eligible_files[0])
+    
+    def test_relative_root_path(self, tmp_path):
+        """Test that scanning works with relative root paths."""
+        import os
+        
+        # Create a subdirectory with a file
+        (tmp_path / "subdir").mkdir()
+        (tmp_path / "subdir" / "file.py").write_text("content\n")
+        
+        # Change to tmp_path and scan with relative path
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(tmp_path)
+            
+            # Scan with relative root_path
+            result = scan_repository(
+                root_path=Path('subdir'),
+                include_extensions=['.py'],
+                exclude_patterns=[],
+                repo_root=Path.cwd(),
+            )
+            
+            # Should find the file
+            assert len(result.eligible_files) == 1
+            assert 'file.py' in str(result.eligible_files[0])
+            
+        finally:
+            os.chdir(original_cwd)
