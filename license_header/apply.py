@@ -53,10 +53,48 @@ def normalize_header(header: str) -> str:
         header: Header text to normalize
         
     Returns:
-        Normalized header text
+        Normalized header text with LF line endings
     """
     # Strip trailing whitespace and ensure exactly one trailing newline
     return header.rstrip() + '\n'
+
+
+def detect_newline_style(content: str) -> str:
+    """
+    Detect the predominant newline style in content.
+    
+    Args:
+        content: File content to analyze
+        
+    Returns:
+        '\r\n' for CRLF, '\n' for LF
+    """
+    # Count occurrences of each newline style
+    crlf_count = content.count('\r\n')
+    lf_count = content.count('\n') - crlf_count  # Subtract CRLF to get pure LF count
+    
+    # Use CRLF if it's the predominant style
+    if crlf_count > lf_count:
+        return '\r\n'
+    return '\n'
+
+
+def convert_newlines(text: str, target_newline: str) -> str:
+    """
+    Convert text to use target newline style.
+    
+    Args:
+        text: Text to convert
+        target_newline: Target newline style ('\r\n' or '\n')
+        
+    Returns:
+        Text with converted newlines
+    """
+    # First normalize to LF, then convert to target
+    text = text.replace('\r\n', '\n')
+    if target_newline == '\r\n':
+        text = text.replace('\n', '\r\n')
+    return text
 
 
 def has_header(content: str, header: str) -> bool:
@@ -112,6 +150,7 @@ def insert_header(content: str, header: str) -> str:
     
     Preserves shebang lines if present. Inserts header immediately after
     shebang, or at the start of the file if no shebang.
+    Preserves the newline style of the original content.
     
     Args:
         content: Original file content
@@ -120,7 +159,12 @@ def insert_header(content: str, header: str) -> str:
     Returns:
         New file content with header inserted
     """
+    # Detect the newline style of the content
+    newline_style = detect_newline_style(content)
+    
+    # Normalize header to LF first, then convert to match content's newline style
     normalized_header = normalize_header(header)
+    normalized_header = convert_newlines(normalized_header, newline_style)
     
     # Extract shebang if present
     shebang, remaining = extract_shebang(content)
@@ -129,8 +173,8 @@ def insert_header(content: str, header: str) -> str:
     if shebang:
         # Insert header after shebang
         # Ensure shebang ends with newline before adding header
-        if not shebang.endswith('\n'):
-            shebang = shebang + '\n'
+        if not shebang.endswith('\n') and not shebang.endswith('\r\n'):
+            shebang = shebang + newline_style
         new_content = shebang + normalized_header + remaining
     else:
         # Insert header at start

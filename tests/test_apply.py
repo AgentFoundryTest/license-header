@@ -353,6 +353,37 @@ class TestInsertHeader:
         result = insert_header(content, header)
         assert result == "#!/usr/bin/env python\n# Copyright 2025\n", \
             "Header should be on separate line after shebang"
+    
+    def test_insert_header_preserves_crlf(self):
+        """Test that inserting header preserves CRLF line endings."""
+        header = "# Copyright 2025\n"
+        # Create content with CRLF
+        crlf = '\r\n'
+        content = f"def func():{crlf}    pass{crlf}"
+        result = insert_header(content, header)
+        expected = f"# Copyright 2025{crlf}def func():{crlf}    pass{crlf}"
+        assert result == expected, "Header should use CRLF to match file content"
+        assert '\r\n' in result, "Result should contain CRLF"
+    
+    def test_insert_header_preserves_lf(self):
+        """Test that inserting header preserves LF line endings."""
+        header = "# Copyright 2025\n"
+        content = "def func():\n    pass\n"
+        result = insert_header(content, header)
+        expected = "# Copyright 2025\ndef func():\n    pass\n"
+        assert result == expected, "Header should use LF to match file content"
+        # Make sure no CRLF was introduced
+        assert '\r\n' not in result, "Result should not contain CRLF"
+    
+    def test_insert_header_with_shebang_preserves_crlf(self):
+        """Test that inserting header after shebang preserves CRLF."""
+        header = "# Copyright 2025\n"
+        crlf = '\r\n'
+        content = f"#!/usr/bin/env python{crlf}def func():{crlf}    pass{crlf}"
+        result = insert_header(content, header)
+        expected = f"#!/usr/bin/env python{crlf}# Copyright 2025{crlf}def func():{crlf}    pass{crlf}"
+        assert result == expected, "Header should use CRLF after shebang"
+        assert result.count('\r\n') == 4, "Should have CRLF in all line endings (shebang, header, 2 code lines)"
         # Verify the header doesn't get concatenated to shebang
         assert "python#" not in result, "Header should not be concatenated to shebang"
 
