@@ -383,7 +383,7 @@ class TestApplyHeaderToFile:
         output_dir = tmp_path / "output"
         header = "# Copyright 2025\n"
         
-        apply_header_to_file(file_path, header, output_dir=output_dir)
+        apply_header_to_file(file_path, header, output_dir=output_dir, scan_root=src_dir)
         
         # Original should be unchanged
         assert file_path.read_text() == "print('hello')\n"
@@ -392,6 +392,37 @@ class TestApplyHeaderToFile:
         output_file = output_dir / "test.py"
         assert output_file.exists()
         assert output_file.read_text() == "# Copyright 2025\nprint('hello')\n"
+    
+    def test_apply_header_to_output_dir_preserves_structure(self, tmp_path):
+        """Test that output directory preserves nested directory structure."""
+        src_dir = tmp_path / "src"
+        pkg_dir = src_dir / "package" / "subpkg"
+        pkg_dir.mkdir(parents=True)
+        
+        # Create files in nested structure
+        file1 = src_dir / "file1.py"
+        file1.write_text("def func1():\n    pass\n")
+        
+        file2 = pkg_dir / "file2.py"
+        file2.write_text("def func2():\n    pass\n")
+        
+        output_dir = tmp_path / "output"
+        header = "# Copyright 2025\n"
+        
+        # Apply headers preserving structure
+        apply_header_to_file(file1, header, output_dir=output_dir, scan_root=src_dir)
+        apply_header_to_file(file2, header, output_dir=output_dir, scan_root=src_dir)
+        
+        # Check that relative paths are preserved
+        output_file1 = output_dir / "file1.py"
+        output_file2 = output_dir / "package" / "subpkg" / "file2.py"
+        
+        assert output_file1.exists(), "Top-level file should be at output root"
+        assert output_file2.exists(), "Nested file should preserve directory structure"
+        
+        # Verify content
+        assert "# Copyright 2025" in output_file1.read_text()
+        assert "# Copyright 2025" in output_file2.read_text()
     
     def test_apply_header_preserves_permissions(self, tmp_path):
         """Test that file permissions are preserved."""

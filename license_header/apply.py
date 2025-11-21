@@ -139,7 +139,8 @@ def apply_header_to_file(
     file_path: Path,
     header: str,
     dry_run: bool = False,
-    output_dir: Optional[Path] = None
+    output_dir: Optional[Path] = None,
+    scan_root: Optional[Path] = None
 ) -> bool:
     """
     Apply header to a single file.
@@ -151,6 +152,7 @@ def apply_header_to_file(
         header: Header text to insert
         dry_run: If True, don't actually modify files
         output_dir: If provided, write to this directory instead of in-place
+        scan_root: Root path used for scanning (needed to preserve relative paths in output_dir)
         
     Returns:
         True if file was modified, False if already compliant or skipped
@@ -177,9 +179,18 @@ def apply_header_to_file(
         
         # Determine output path
         if output_dir:
-            # Write to output directory, preserving structure
-            # This is simplified - in production would need to handle relative paths properly
-            output_path = output_dir / file_path.name
+            # Write to output directory, preserving relative directory structure
+            if scan_root:
+                try:
+                    # Preserve relative path from scan root
+                    rel_path = file_path.resolve().relative_to(scan_root.resolve())
+                    output_path = output_dir / rel_path
+                except ValueError:
+                    # File is not relative to scan root, use basename as fallback
+                    output_path = output_dir / file_path.name
+            else:
+                # No scan root provided, use basename
+                output_path = output_dir / file_path.name
             output_path.parent.mkdir(parents=True, exist_ok=True)
         else:
             output_path = file_path
@@ -279,7 +290,8 @@ def apply_headers(config: Config) -> ApplyResult:
                 file_path=file_path,
                 header=header,
                 dry_run=config.dry_run,
-                output_dir=output_dir
+                output_dir=output_dir,
+                scan_root=scan_path
             )
             
             if was_modified:

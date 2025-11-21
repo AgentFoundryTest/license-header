@@ -271,7 +271,7 @@ The tool enforces security restrictions on file paths:
 ### Edge Cases
 
 - **Missing header file**: Tool exits with descriptive error message and non-zero exit code
-- **Header without trailing newline**: File content is read exactly as-is without modification
+- **Header without trailing newline**: Header content is normalized to ensure exactly one trailing newline for consistent behavior
 - **Invalid JSON config**: Tool exits with parse error details
 - **Unknown file extensions**: Logged as warnings but don't prevent execution
 - **Invalid exclude patterns**: Logged as warnings but don't prevent execution
