@@ -4,7 +4,6 @@ Tests for configuration module.
 
 import json
 import pytest
-import tempfile
 from pathlib import Path
 from click import ClickException
 

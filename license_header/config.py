@@ -6,8 +6,6 @@ Handles loading and merging configuration from CLI arguments and config files.
 
 import json
 import logging
-import os
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
