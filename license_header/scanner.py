@@ -120,7 +120,7 @@ def _matches_glob_pattern(rel_path: Path, pattern: str) -> bool:
         # For patterns starting with **, also try without the ** prefix
         # This handles cases like '**/vendor' matching 'vendor/file.js' at root
         if pattern.startswith('**/'):
-            stripped_pattern = pattern[3:]  # Remove '**/
+            stripped_pattern = pattern[3:]  # Remove '**/'
             if _try_directory_patterns(rel_path, stripped_pattern):
                 return True
     
