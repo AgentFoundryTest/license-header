@@ -228,6 +228,17 @@ class TestHasHeader:
         header = "# Copyright 2025\n"
         content = "\n\n# Copyright 2025\nprint('hello')\n"
         assert has_header(content, header)
+    
+    def test_has_header_partial_match_with_leading_blanks(self):
+        """Test that partial header with leading blanks is not detected as compliant."""
+        header = "# Copyright 2025\n"
+        content = "\n\n# Copyright 2025 Extra Text\ncode"
+        assert not has_header(content, header), "Partial match should not be detected"
+        
+        # Also test with multi-line header
+        header2 = "# Copyright 2025\n# Licensed under MIT\n"
+        content2 = "\n\n# Copyright 2025\ncode"
+        assert not has_header(content2, header2), "Partial multiline header should not be detected"
 
 
 class TestInsertHeader:
@@ -267,6 +278,16 @@ class TestInsertHeader:
         content = "def main():\n    pass\n"
         result = insert_header(content, header)
         assert result == "# Copyright 2025\n# Licensed under MIT\ndef main():\n    pass\n"
+    
+    def test_insert_header_after_shebang_no_newline(self):
+        """Test inserting header after shebang that has no trailing newline."""
+        header = "# Copyright 2025\n"
+        content = "#!/usr/bin/env python"
+        result = insert_header(content, header)
+        assert result == "#!/usr/bin/env python\n# Copyright 2025\n", \
+            "Header should be on separate line after shebang"
+        # Verify the header doesn't get concatenated to shebang
+        assert "python#" not in result, "Header should not be concatenated to shebang"
 
 
 class TestApplyHeaderToFile:

@@ -95,7 +95,8 @@ def has_header(content: str, header: str) -> bool:
     # Reconstruct content without leading whitespace
     if start_idx < len(lines):
         content_without_leading_ws = '\n'.join(lines[start_idx:])
-        if content_without_leading_ws.startswith(normalized_header.rstrip()):
+        # Use exact match with the full normalized header (including trailing newline)
+        if content_without_leading_ws.startswith(normalized_header):
             return True
     
     return False
@@ -123,6 +124,9 @@ def insert_header(content: str, header: str) -> str:
     # Build new content
     if shebang:
         # Insert header after shebang
+        # Ensure shebang ends with newline before adding header
+        if not shebang.endswith('\n'):
+            shebang = shebang + '\n'
         new_content = shebang + normalized_header + remaining
     else:
         # Insert header at start
