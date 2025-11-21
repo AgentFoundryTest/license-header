@@ -378,7 +378,9 @@ class TestScanRepository:
         # Create a regular file
         (tmp_path / "readable.py").write_text("content\n")
         
-        # Create a file and make it unreadable (Unix only)
+        # Create a file and make it unreadable
+        # Note: Windows handles file permissions differently via ACLs,
+        # so this test only runs on Unix-like systems where chmod works
         if os.name != 'nt':  # Skip on Windows
             unreadable = tmp_path / "unreadable.py"
             unreadable.write_text("content\n")

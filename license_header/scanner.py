@@ -165,9 +165,6 @@ def scan_repository(
     # Combine default excludes with user patterns
     all_exclude_patterns = DEFAULT_EXCLUDE_DIRS + exclude_patterns
     
-    # Track visited directories to detect circular symlinks
-    visited_dirs: Set[Path] = set()
-    
     logger.info(f"Scanning repository at {root_path}")
     logger.info(f"Include extensions: {include_extensions}")
     logger.info(f"Exclude patterns: {all_exclude_patterns}")
