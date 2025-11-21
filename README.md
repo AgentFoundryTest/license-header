@@ -107,6 +107,9 @@ license-header check
 # Check specific path
 license-header check --path /path/to/project
 
+# Preview check results without performing actions
+license-header check --dry-run
+
 # Fail on any missing or incorrect headers
 license-header check --strict
 
@@ -140,7 +143,7 @@ Create a `license-header.config.json` file in your repository root:
 | **Exclude Paths** | `--exclude-path` | `exclude_paths` | `["node_modules", ".git", "__pycache__", "venv", "env", ".venv"]` | Paths/patterns to exclude from processing. CLI flag can be specified multiple times. |
 | **Output Directory** | `--output` | `output_dir` | None (modify in-place) | Directory to save modified files (apply mode) or reports (check mode) |
 | **Target Path** | `--path` | N/A | `.` (current directory) | Path to scan for source files |
-| **Dry Run** | `--dry-run` | N/A | `false` | Preview changes without modifying files (apply mode only) |
+| **Dry Run** | `--dry-run` | N/A | `false` | Preview results without modifying files (both apply and check modes) |
 | **Strict Mode** | `--strict` | N/A | `false` | Fail with non-zero exit code on any issues (check mode only) |
 | **Config File** | `--config` | N/A | `license-header.config.json` if present | Path to custom configuration file |
 
