@@ -321,19 +321,14 @@ def apply_headers(config: Config) -> ApplyResult:
     
     logger.info(f"Found {len(scan_result.eligible_files)} eligible files")
     
-    # Process output directory if specified
-    # NOTE: output_dir is NOT used for file copying in apply mode
-    # Files are always modified in-place. output_dir is reserved for report generation.
-    output_dir = None
-    
-    # Apply header to each eligible file
+    # Apply header to each eligible file (always in-place, never copying to output dir)
     for file_path in scan_result.eligible_files:
         try:
             was_modified = apply_header_to_file(
                 file_path=file_path,
                 header=header,
                 dry_run=config.dry_run,
-                output_dir=output_dir,
+                output_dir=None,  # Always modify in-place
                 scan_root=scan_path
             )
             

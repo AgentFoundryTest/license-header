@@ -50,7 +50,7 @@ def main():
 @click.option('--config', type=str, help='Path to configuration file (default: license-header.config.json if present)')
 @click.option('--header', type=str, help='Path to license header file')
 @click.option('--path', default='.', help='Path to apply license headers (default: current directory)')
-@click.option('--output', type=str, help='Output directory for report files (default: no reports generated)')
+@click.option('--output', type=str, help='Output directory for JSON and Markdown report files (default: no reports generated)')
 @click.option('--include-extension', multiple=True, help='File extensions to include (e.g., .py, .js). Can be specified multiple times.')
 @click.option('--exclude-path', multiple=True, help='Paths/patterns to exclude (e.g., node_modules). Can be specified multiple times.')
 @click.option('--dry-run', is_flag=True, help='Preview changes without modifying files')
