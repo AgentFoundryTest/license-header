@@ -73,19 +73,23 @@ def has_header(content: str, header: str) -> bool:
     Returns:
         True if content has the header, False otherwise
     """
-    # Normalize both header and content for comparison
+    # Normalize header for comparison (convert to LF-only)
     normalized_header = normalize_header(header)
     
     # Extract shebang if present
     shebang, remaining = extract_shebang(content)
     
+    # Normalize content to LF-only for comparison
+    # This allows matching headers regardless of CRLF vs LF style
+    normalized_remaining = remaining.replace('\r\n', '\n')
+    
     # Check if remaining content starts with the header
-    if remaining.startswith(normalized_header):
+    if normalized_remaining.startswith(normalized_header):
         return True
     
     # Also check with various whitespace variations around the header
     # to handle cases where there might be extra blank lines
-    lines = remaining.split('\n')
+    lines = normalized_remaining.split('\n')
     
     # Skip leading empty lines
     start_idx = 0

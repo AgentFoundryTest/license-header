@@ -285,6 +285,17 @@ class TestHasHeader:
         content = "\n\n# Copyright 2025\nprint('hello')\n"
         assert has_header(content, header)
     
+    def test_has_header_with_crlf(self):
+        """Test detecting header with CRLF line endings."""
+        header = "# Copyright 2025\n"
+        content_crlf = "# Copyright 2025\r\nprint('hello')\n"
+        assert has_header(content_crlf, header), "Should detect header with CRLF"
+        
+        # Also test multiline header with CRLF
+        header_multi = "# Copyright 2025\n# Licensed under MIT\n"
+        content_multi_crlf = "# Copyright 2025\r\n# Licensed under MIT\r\nprint('hello')\n"
+        assert has_header(content_multi_crlf, header_multi), "Should detect multiline header with CRLF"
+    
     def test_has_header_partial_match_with_leading_blanks(self):
         """Test that partial header with leading blanks is not detected as compliant."""
         header = "# Copyright 2025\n"
