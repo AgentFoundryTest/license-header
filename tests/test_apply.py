@@ -561,6 +561,10 @@ class TestApplyHeaderToFile:
         if os.name == 'nt':  # Skip on Windows - different permission model
             pytest.skip("Permission test not applicable on Windows")
         
+        # Skip when running as root - permission checks don't work
+        if os.geteuid() == 0:
+            pytest.skip("Permission test not applicable when running as root")
+        
         # Create a read-only directory instead
         readonly_dir = tmp_path / "readonly"
         readonly_dir.mkdir()
