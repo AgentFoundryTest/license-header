@@ -104,10 +104,8 @@ def apply(config, header, path, output, include_extension, exclude_path, dry_run
         
         if dry_run:
             click.echo("[DRY RUN] Files that would be modified:")
-            for file_path in result.modified_files[:10]:  # Show first 10
+            for file_path in result.modified_files:
                 click.echo(f"  - {file_path}")
-            if len(result.modified_files) > 10:
-                click.echo(f"  ... and {len(result.modified_files) - 10} more")
             click.echo()
             click.echo("[DRY RUN] No files were actually modified.")
         elif result.modified_files:
